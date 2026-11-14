@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Shape-Shifter</title>
+</head>
+<body>
+<div id="ShapeShifterConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-select">
+    <div data-role="content">
+        <div class="content-primary">
+            <h2>Shape-Shifter</h2>
+            <p>Answers Plex clients as if this server were a Plex Media Server.</p>
+
+            <div class="verticalSection">
+                <h3>Status</h3>
+                <pre id="ShapeShifterStatus" style="white-space:pre-wrap;max-height:28em;overflow:auto;">Loading…</pre>
+                <button is="emby-button" type="button" id="RefreshStatus" class="raised"><span>Refresh</span></button>
+                <button is="emby-button" type="button" id="PublishNow" class="raised"><span>Publish connections now</span></button>
+            </div>
+
+            <form id="ShapeShifterConfigForm">
+                <h3>Identity</h3>
+                <div class="selectContainer">
+                    <select is="emby-select" id="Mode" label="Mode">
+                        <option value="SideBySide">Side-by-side (new server next to PMS, for testing)</option>
+                        <option value="Takeover">Takeover (imported PMS identity; PMS stopped)</option>
+                    </select>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="FriendlyName" label="Server name" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="MachineIdentifier" label="Machine identifier" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="ClaimToken" label="Claim token (side-by-side)" />
+                    <div class="fieldDescription">Get one at <a href="https://plex.tv/claim" target="_blank" rel="noopener">plex.tv/claim</a> while signed in as the owner, then press Claim within 4 minutes.</div>
+                </div>
+                <button is="emby-button" type="button" id="ClaimButton" class="raised"><span>Claim</span></button>
+                <button is="emby-button" type="button" id="NewIdentityButton" class="raised"><span>New side-by-side identity</span></button>
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="ServerToken" label="Server token" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="OwnerPlexAccountId" label="Owner plex.tv account id (resolved automatically)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="OwnerPlexUsername" label="Owner plex.tv username" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="AdvertisedVersion" label="Advertised PMS version" />
+                </div>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="EnablePlexTvAuth" />
+                    <span>Validate tokens with plex.tv</span>
+                </label>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="AutoCreateUsers" />
+                    <span>Create Jellyfin users for people this server is shared with on plex.tv (library access follows the share; sign-in via Plex or PlexSSO)</span>
+                </label>
+
+                <h3>Listener</h3>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="BindAddress" label="Bind address" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="HttpPort" label="Port (HTTP and HTTPS share it, like PMS)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="HttpsPort" label="Extra TLS-only port (0 disables)" />
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="SecureConnections" label="Secure connections">
+                        <option value="Required">Required</option>
+                        <option value="Preferred">Preferred</option>
+                        <option value="Disabled">Disabled</option>
+                    </select>
+                </div>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="EnableGdm" />
+                    <span>Answer GDM LAN discovery (udp/32414)</span>
+                </label>
+
+                <h3>Certificates</h3>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="CertificatePath" label="plex.direct certificate (.p12)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="CertificatePassword" label="plex.direct certificate password" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="CustomCertificatePath" label="Custom certificate (.p12)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="CustomCertificatePassword" label="Custom certificate password" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="CustomCertificateDomain" label="Custom certificate domain" />
+                </div>
+
+                <h3>Publishing to plex.tv</h3>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="PublishConnections" />
+                    <span>Publish connections to plex.tv (check "would publish" in the status above first)</span>
+                </label>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="CustomConnections" label="Custom server access URLs, separated by ; (e.g. https://plex.example.com:443)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="PublicAddress" label="Public address (empty: ask plex.tv)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="PublicPort" label="Public (port-forwarded) port, 0 for none" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="LanAddresses" label="LAN addresses to publish, separated by ; (empty: detect; in Docker use the host IP)" />
+                </div>
+
+                <h3>Users</h3>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="UserMappings" label="User mappings, separated by ;  each as plexAccountId,plexUsername,jellyfinUserId[,localToken]" />
+                    <div class="fieldDescription">Unmapped Plex accounts fall back to a Jellyfin user with the same name; the owner falls back to the first administrator. A local token lets a test client connect without plex.tv.</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="MetadataEditors" label="Metadata editors besides Jellyfin admins (Jellyfin user id, Plex account id or Plex username), separated by ;" />
+                </div>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="AllowMediaDeletion" />
+                    <span>Allow metadata editors to delete media files from Plex clients</span>
+                </label>
+
+                <h3>Import from PMS</h3>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="PmsDataPath" label="PMS data directory (contains Preferences.xml)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="PathRewrites" label="Path rewrites, separated by ;  each as /pms/path=&gt;/jellyfin/path" />
+                </div>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="ImportIdentity" />
+                    <span>Take over PMS identity and certificates (switches to takeover mode; stop PMS first)</span>
+                </label>
+                <div class="fieldDescription">Run the import from Scheduled Tasks → Shape-Shifter, before Plex clients connect.</div>
+
+                <h3>Jellyfin loopback</h3>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="JellyfinBaseUrl" label="Jellyfin URL reachable from this server" />
+                </div>
+
+                <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        (function () {
+            const pluginId = '5c1a3e7b-9f0d-4b8e-a6c2-0d3f4e5a6b71';
+            const page = document.querySelector('#ShapeShifterConfigPage');
+            const text = ['FriendlyName', 'MachineIdentifier', 'ServerToken', 'OwnerPlexAccountId', 'OwnerPlexUsername', 'AdvertisedVersion',
+                'BindAddress', 'CertificatePath', 'CertificatePassword', 'CustomCertificatePath', 'CustomCertificatePassword', 'CustomCertificateDomain',
+                'PublicAddress', 'PmsDataPath', 'JellyfinBaseUrl', 'Mode', 'SecureConnections'];
+            const numbers = ['HttpPort', 'HttpsPort', 'PublicPort'];
+            const bools = ['EnableGdm', 'EnablePlexTvAuth', 'AutoCreateUsers', 'PublishConnections', 'AllowMediaDeletion', 'ImportIdentity'];
+            const lists = ['CustomConnections', 'LanAddresses', 'MetadataEditors', 'PathRewrites'];
+            const $ = id => page.querySelector('#' + id);
+
+            function api(method, path, body) {
+                return ApiClient.fetch({
+                    type: method,
+                    url: ApiClient.getUrl('ShapeShifter/' + path),
+                    data: body ? JSON.stringify(body) : undefined,
+                    contentType: 'application/json',
+                    dataType: method === 'GET' ? 'json' : undefined
+                });
+            }
+
+            function loadStatus() {
+                api('GET', 'Status').then(s => $('ShapeShifterStatus').textContent = JSON.stringify(s, null, 2))
+                    .catch(e => $('ShapeShifterStatus').textContent = 'Status unavailable: ' + e);
+            }
+
+            const fields = text.concat(numbers, bools, lists, ['UserMappings']);
+
+            // List settings are single-line inputs (entries separated by ';'): the multi-line
+            // emby-textarea fields didn't show up on this plugin page in Jellyfin web.
+            const splitList = v => v.split(/[;\n]/).map(l => l.trim()).filter(l => l.length > 0);
+
+            function readField(k) {
+                if (bools.includes(k)) return $(k).checked;
+                if (numbers.includes(k)) return parseInt($(k).value || '0', 10);
+                if (lists.includes(k)) return splitList($(k).value);
+                if (k === 'UserMappings') {
+                    return splitList($(k).value).map(l => {
+                        const [PlexAccountId = '', PlexUsername = '', JellyfinUserId = '', LocalToken = ''] = l.split(',').map(p => p.trim());
+                        return { PlexAccountId, PlexUsername, JellyfinUserId, LocalToken };
+                    });
+                }
+                return $(k).value;
+            }
+
+            function writeField(k, v) {
+                if (bools.includes(k)) $(k).checked = !!v;
+                else if (lists.includes(k)) $(k).value = (v || []).join('; ');
+                else if (k === 'UserMappings') $(k).value = (v || []).map(m => [m.PlexAccountId, m.PlexUsername, m.JellyfinUserId, m.LocalToken].join(',').replace(/,+$/, '')).join('; ');
+                else $(k).value = v ?? '';
+            }
+
+            // What the form showed when loaded. Saving only writes fields the user changed, so values
+            // the server set meanwhile (the token from Claim, the resolved owner id, a new identity)
+            // aren't overwritten with what this page loaded before they existed.
+            let loaded = {};
+
+            function loadForm() {
+                Dashboard.showLoadingMsg();
+                return ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    fields.forEach(k => writeField(k, config[k]));
+                    loaded = {};
+                    fields.forEach(k => loaded[k] = JSON.stringify(readField(k)));
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+
+            page.addEventListener('pageshow', function () {
+                loadForm();
+                loadStatus();
+            });
+
+            $('RefreshStatus').addEventListener('click', loadStatus);
+            $('PublishNow').addEventListener('click', () => api('POST', 'Publish').then(() => setTimeout(loadStatus, 3000)));
+            $('ClaimButton').addEventListener('click', function () {
+                Dashboard.showLoadingMsg();
+                api('POST', 'Claim', { Token: $('ClaimToken').value })
+                    .then(() => { $('ClaimToken').value = ''; return loadForm(); })
+                    .then(() => { Dashboard.alert('Claimed. With publishing on, the server appears in your Plex account shortly.'); setTimeout(loadStatus, 3000); })
+                    .catch(() => { Dashboard.hideLoadingMsg(); Dashboard.alert('Claim failed. Claim tokens expire after 4 minutes; get a new one.'); });
+            });
+            $('NewIdentityButton').addEventListener('click', function () {
+                if (confirm('Generate a new side-by-side identity? The current one will need removing from your Plex account.')) {
+                    api('POST', 'NewIdentity').then(() => location.reload());
+                }
+            });
+
+            $('ShapeShifterConfigForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    fields.forEach(k => {
+                        const value = readField(k);
+                        if (JSON.stringify(value) !== loaded[k]) config[k] = value;
+                    });
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(r => {
+                        Dashboard.processPluginConfigurationUpdateResult(r);
+                        loadForm();
+                        loadStatus();
+                    });
+                });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>
