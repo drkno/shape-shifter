@@ -1,5 +1,7 @@
 # Shape-Shifter
 
+What if you could migrate from Plex to Jellyfin without needing to immediately change the apps or logins your server users use?
+
 A Jellyfin plugin that makes Jellyfin pretend to be a Plex Media Server, so
 existing Plex clients keep working (unmodified) while you move them to Jellyfin
 one at a time.
